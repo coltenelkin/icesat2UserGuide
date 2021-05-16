@@ -1,4 +1,4 @@
-function rmsez = coregister_icesat2(icesat2, elevations, R2, A)
+function rmsez = coregister_icesat2(icesat2, elevations, R2, A, ChangeTif, TifYear)
 % Function COREGISTER_ICESAT2 coregisters icesat-2 data with a corresponding digital
 % terrain model 
 % INPUTS: icesat2 = a csv file with icesat 2 elevations created using the
@@ -8,6 +8,19 @@ function rmsez = coregister_icesat2(icesat2, elevations, R2, A)
 %                       geotiffread()
 %               A = a [2 1] vector that serves as the spatial offsets in
 %                       the x and y directions (meters)
+%       ChangeTif = (OPTIONAL) a tif with the same coordinate information
+%                   as the elevations tif that represents the annual rate 
+%                   of change of a glacier's surface in meters. The sign
+%                   convention is positive numbers indicate an accumulating
+%                   surface, negative numbers indicate a melting surface,
+%                   and areas outside of the glacier outline should be NaN
+%                   values
+%         TifYear = (OPTIONAL, REQUIRED IF USING A CHANGE TIF) the year of
+%                   the input elevations tif used. This script multiplies the number
+%                   of years since the input elevations by the average anual rate of
+%                   change at each elevation point to get an estimated glacier
+%                   surface map in the year of the ICESat-2 transects.
+%                   Format is yyyy.
 % OUTPUTS:  rmsez = the root mean squared difference between the icesat-2
 %                       elevations and their corresponding (offset) DTM 
 %                       elevations
@@ -19,6 +32,15 @@ function rmsez = coregister_icesat2(icesat2, elevations, R2, A)
 
 elevations(elevations < -10) = nan; % throw out trash data
 elevations(elevations > 10000) = nan; % more trash takeout
+if nargin == 6 % check to see if there's a glacier change tif
+    yyyy = icesat2(end-38:end-35); % pull the year from the filename
+    yyyy = str2num(yyyy); % turn the year string into a number
+    numyears = yyyy - TifYear; % get number of years since the input elevation tif
+    EleChange = numyears * ChangeTif; % scale the change tif by the number of years since the elevations tif
+    elevations = elevations + EleChange;
+end
+
+
 
 T = readtable(icesat2);
 
