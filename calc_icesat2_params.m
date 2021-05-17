@@ -92,8 +92,8 @@ for t = 1:length(xs)
     in2 = flip(in); % create a flipped in-grid (need row, column instead of column, row)
     paramsin = tif(in2); % saveparameters
     parameter_report(t) = nanmean(paramsin);
-    range(t) = nanmax(parameter_report(:)) - nanmin(parameter_report(:)); 
-    SDev(t) = nanstd(parameter_report(:));
+    range(t) = nanmax(paramsin(:)) - nanmin(paramsin(:)); 
+    SDev(t) = nanstd(paramsin(:));
 end
 params = parameter_report(:); % get the parameter column
 range = range(:);
