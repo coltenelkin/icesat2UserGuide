@@ -10,13 +10,16 @@ function [params, range, SDev] = calc_icesat2_params(icesat2, tif, R2, offsets)
 %         offsets = a [2 1] vector that serves as the spatial offsets in
 %                       the x and y directions (meters)
 % OUTPUTS: params = the terrain parameter from the tif averaged over the
-%                   bounding box of the icesat2 footprint
+%                   bounding box of the icesat2 footprint. Reported as a
+%                   column vector matching the icesat2 input points
 %           range = the range (max - min) of the parameter in the footprint
 %            SDev = the standard deviation of the parameter in the
-%            footprint
+%                   footprint
 
 % Created 30 November 2020 by Colten Elkin (coltenelkin@u.boisestate.edu)
-% last modified 30 November 2020
+% last modified 16 May 2021
+% Most recent edit: added lines to output the range and the standard
+% deviation of the parameter values if the user chooses to save them 
 
 T = readtable(icesat2);
 
@@ -47,7 +50,7 @@ for r = 1:length(theta)-1
         ypoly(2) = norths(r) - 50 + footwidth/2*cos((pi/2) - theta(r));
         ypoly(3) = norths(r) + 50 + footwidth/2*cos((pi/2) - theta(r));
         ypoly(4) = norths(r) + 50 - footwidth/2*cos((pi/2) - theta(r));
-        ypoly = ypoly+offsets(2); % adjust by the nothing offset
+        ypoly = ypoly+offsets(2); % adjust by the northing offset
         ys{r} = [ypoly(1), ypoly(2), ypoly(3), ypoly(4), ypoly(1)]; % save the corners as a vector in the y-s cell array
         
     elseif strcmp(icesat2(end-44:end-40), 'ATL06') == 1 % ATL06 commands
@@ -86,10 +89,14 @@ for t = 1:length(xs)
     
     % first trimming
     in = inpolygon(xgrid, ygrid, xv, yv); % get logical array of in values
-%     pointsinx = xgrid(in); % save x locations
-%     pointsiny = ygrid(in); % save y locations
     in2 = flip(in); % create a flipped in-grid (need row, column instead of column, row)
     paramsin = tif(in2); % saveparameters
     parameter_report(t) = nanmean(paramsin);
+    range(t) = nanmax(parameter_report(:)) - nanmin(parameter_report(:)); 
+    SDev(t) = nanstd(parameter_report(:));
 end
-params = parameter_report(:);
+params = parameter_report(:); % get the parameter column
+range = range(:);
+SDev = SDev(:);
+
+
