@@ -1,4 +1,4 @@
-function terrain_parameters = calc_icesat2_params(icesat2, tif, R2, offsets)
+function [params, range, SDev] = calc_icesat2_params(icesat2, tif, R2, offsets)
 % Function COREGISTER_ICESAT2 coregisters icesat-2 data with a corresponding digital
 % terrain model 
 % INPUTS: icesat2 = a csv file with icesat 2 elevations created using the
@@ -9,9 +9,11 @@ function terrain_parameters = calc_icesat2_params(icesat2, tif, R2, offsets)
 %                       geotiffread()
 %         offsets = a [2 1] vector that serves as the spatial offsets in
 %                       the x and y directions (meters)
-% OUTPUTS:  rmsez = the root mean squared difference between the icesat-2
-%                       elevations and their corresponding (offset) DTM 
-%                       elevations
+% OUTPUTS: params = the terrain parameter from the tif averaged over the
+%                   bounding box of the icesat2 footprint
+%           range = the range (max - min) of the parameter in the footprint
+%            SDev = the standard deviation of the parameter in the
+%            footprint
 
 % Created 30 November 2020 by Colten Elkin (coltenelkin@u.boisestate.edu)
 % last modified 30 November 2020
@@ -90,4 +92,4 @@ for t = 1:length(xs)
     paramsin = tif(in2); % saveparameters
     parameter_report(t) = nanmean(paramsin);
 end
-terrain_parameters = parameter_report(:);
+params = parameter_report(:);
